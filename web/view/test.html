@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Title</title>
+</head>
+<body>
+<script>
+
+    var isPause = false;
+
+    function Timer() {
+        this.delay = 0;
+    }
+
+    Timer.prototype.sleep = function (delay) {
+        this.delay += delay;
+        return this;
+    };
+    Timer.prototype.do = function (cb) {
+        setTimeout(cb, this.delay);
+        return this;
+    }
+
+    console.log(new Date());
+    var timer = new Timer();
+
+    setInterval(function () {
+        if(!isPause){
+            timer.sleep(3000)
+                .do(function () {
+                    console.log("#1"+new Date());
+                })
+                .sleep(3000)
+                .do(function () {
+                    console.log("#2"+new Date());
+                })
+        }
+    },6000);
+
+    function IsPause() {
+        if(!isPause){
+            document.getElementById("btn").innerText = "继续";
+           isPause = true;
+        } else {
+            document.getElementById("btn").innerText = "暂停";
+            isPause = false;
+        }
+    }
+</script>
+
+<button onclick="IsPause()" id="btn">暂停</button>
+</body>
+</html>

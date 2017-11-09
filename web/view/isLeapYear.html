@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Title</title>
+    <script src="../d3/d3.js"></script>
+</head>
+<body>
+
+
+<svg width="500" , height="500" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700, 700 ">
+    <g>
+        <rect x="250" y="20" rx="10" ry="30" width="100" height="50" id="begin"
+              style="fill: white; stroke: black; stroke-width: 2"></rect>
+        <text x="250" y="20" dx="2em" dy="2em">开始</text>
+    </g>
+    <g>
+        <line x1="300" y1="70" x2="300" y2="100" stroke="black" stroke-width="1"></line>
+    </g>
+    <g>
+        <polygon points="270,100,370,100,320,150,220,150" id="input"
+                 style="fill: white; stroke: black;stroke-width: 2;"></polygon>
+        <text x="250" y="100" dx="0.5em" dy="2em">输入YEAR</text>
+    </g>
+    <g>
+        <line x1="300" y1="150" x2="300" y2="180" stroke="black" stroke-width="1"></line>
+    </g>
+    <g>
+        <polygon points="300,180,380,220,300,260,220,220" id="division4"
+                 style="fill: white; stroke: black;stroke-width: 2;"></polygon>
+        <text x="250" y="180" dx="0.5em" dy="3em">4整除YEAR？</text>
+        <polyline points="220,220,120,220,120,450" style="fill: white;stroke: black; stroke-width: 1"></polyline>
+        <polyline points="380,220,450,220,450,250" style="fill: white;stroke: black; stroke-width: 1"></polyline>
+    </g>
+
+    <g>
+        <polygon points="450,250,530,290,450,330,370,290" id="division100"
+                 style="fill: white; stroke: black;stroke-width: 2;"></polygon>
+        <text x="400" y="250" dy="3em">100整除YEAR？</text>
+        <polyline points="370,290,300,290,300,320" style="fill: white;stroke: black; stroke-width: 1"></polyline>
+        <polyline points="450,330,450,450" style="fill: white;stroke: black; stroke-width: 1"></polyline>
+    </g>
+    <g>
+        <polygon points="300,320,380,360,300,400,220,360" id="division400"
+                 style="fill: white; stroke: black;stroke-width: 2;"></polygon>
+        <text x="250" y="320" dy="3em">400整除YEAR？</text>
+        <polyline points="300,400,300,450" style="fill: white;stroke: black; stroke-width: 1"></polyline>
+    </g>
+    <g>
+        <polygon points="100,450,200,450,150,490,50,490" id="notLeapYear"
+                 style="fill: white; stroke: black;stroke-width: 2;"></polygon>
+        <text x="50" y="450" dx="2.5em" dy="1.8em">不是闰年</text>
+        <polyline points="120,490,120,520,300,520,300,600"
+                  style="fill: white;stroke: black; stroke-width: 1"></polyline>
+    </g>
+    <g>
+        <polygon points="260,450,360,450,310,490,210,490" id="LeapYear1"
+                 style="fill: white; stroke: black;stroke-width: 2;"></polygon>
+        <text x="260" y="450" dy="1.8em">是闰年</text>
+        <polyline points="300,490,300,600" style="fill: white;stroke: black; stroke-width: 1"></polyline>
+    </g>
+    <g>
+        <polygon points="410,450,510,450,460,490,360,490" id="LeapYear2"
+                 style="fill: white; stroke: black;stroke-width: 2;"></polygon>
+        <text x="410" y="450" dy="1.8em">是闰年</text>
+        <polyline points="450,490,450,520,300,520,300,600"
+                  style="fill: white;stroke: black; stroke-width: 1"></polyline>
+    </g>
+    <g>
+        <rect x="250" y="560" rx="10" ry="30" width="100" height="50" id="end"
+              style="fill: white; stroke: black; stroke-width: 2"></rect>
+        <text x="250" y="560" dx="2em" dy="2em">结束</text>
+    </g>
+</svg>
+<input type="text" placeholder="输入年份" id="year">
+<button onclick="isLeapYear()">开始</button>
+<script>
+    var svg = d3.select("body").select("svg");
+
+    function highLight(key) {
+        svg.select(key)
+            .style("fill", "yellow");
+    }
+
+    function lowerLight(key) {
+        svg.select(key)
+            .style("fill", "white");
+    }
+
+    function isLeapYear() {
+        var year = document.getElementById("year").value;
+        console.log(year);
+        svg.selectAll("polygon")
+            .style("fill", "white");
+        svg.selectAll("rect")
+            .style("fill", "white");
+        var flagN = false, flag100 = false,
+            flag400 = false, end = false;
+        setTimeout(function () {
+            highLight("#begin");
+        }, 10);
+        setTimeout(function () {
+            lowerLight("#begin");
+            highLight("#input");
+        }, 1000);
+        setTimeout(function () {
+            lowerLight("#input");
+            if (year % 4 == 0) {
+                svg.select("#division4")
+                    .style("fill", "#97FFFF");
+                flag100 = true;
+            } else {
+                svg.select("#division4")
+                    .style("fill", "red");
+                flagN = true;
+            }
+        }, 2000);
+        setTimeout(function () {
+            if (flag100) {
+                if (year % 100 != 0) {
+                    svg.select("#division100")
+                        .style("fill", "red");
+                    highLight("#LeapYear2")
+                    end = true;
+                } else {
+                    svg.select("#division100")
+                        .style("fill", "#97FFFF");
+                    flag400 = true;
+                }
+            }
+            if (flagN) {
+                highLight("#notLeapYear");
+                end = true;
+            }
+        }, 3000);
+        setTimeout(function () {
+            if(!end) {
+                if (flag400) {
+                    if (year % 400 == 0) {
+                        svg.select("#division400")
+                            .style("fill", "#97FFFF");
+                        highLight("#LeapYear1");
+                        end = true;
+                    } else {
+                        svg.select("#division4")
+                            .style("fill", "red");
+                        highLight("#notLeapYear");
+                        end = true;
+                    }
+                }
+            } else {
+                highLight("#end");
+                return;
+            }
+        }, 4000);
+        setTimeout(function () {
+            if(end){
+                highLight("#end");
+                return;
+            }
+        },5000);
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="../d3/d3.js"></script>
+    <title>直接选择排序</title>
+    <style>
+        .content {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+        }
+
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
+
+        .sort_info {
+            width: 400px;
+        }
+    </style>
+</head>
+<body>
+<div class="content">
+    <div class="sort_content">
+        <div>
+            <svg width="400" height="400"></svg>
+        </div>
+        <div style="margin-left: 20px;">
+            <button onclick="selectionSort()">开始演示</button>
+            <button onclick="Pause()" id="btn">暂停演示</button>
+        </div>
+    </div>
+    <div class="sort_info">
+        <h2>选择排序</h2>
+        <div style="font-size: 14px;">
+            <p>1.初始状态：i=0,将arr[i]作为初始最小值。</p>
+            <p>2.进行一趟遍历找出最小本次排序的最小值并记录它在数组中的位置k。</p>
+            <p>3.在本次遍历完成后交换arr[i]和arr[k]，使 i ++。</p>
+            <p>4.重复进行步骤2步骤3直到i等于数组arr的长度</p>
+        </div>
+        <div id="sort_code">
+            <h2>核心代码</h2>
+            <p>
+            <pre>   for(i = 0; i < arr.length; i ++){</pre>
+            <pre>       k = i;</pre>
+            <pre>       for(j = i + 1; j < arr.length; j ++){</pre>
+            <pre>           if(arr[j] < arr[k]){</pre>
+            <pre>               k = j;}}</pre>
+            <pre>           if(k != i){</pre>
+            <pre>               swap(arr[k],arr[i]);</pre>
+            <pre>           }</pre>
+            <pre>   }</pre>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    var dataset = [80, 90, 50, 35, 20];
+    var width = 400;
+    var height = 400;
+    var svg = d3.select("svg");
+    var padding = {top: 20, right: 20, bottom: 20, left: 20};
+
+    var rectStep = 55;
+    var rectWidth = 30;
+    var rect = svg.selectAll("rect")
+        .data(dataset)
+        .enter()
+        .append("g")
+        .append("rect")
+        .attr("fill", "steelblue")
+        .attr("id", function (d, i) {
+            return "rect" + i;
+        })
+        .attr("x", function (d, i) {
+            return padding.left + i * rectStep;
+        })
+        .attr("y", function () {
+            return height - padding.bottom - 250;
+        })
+        .attr("width", rectWidth)
+        .attr("height", function (d) {
+            return d;
+        });
+</script>
+<script>
+    var isPause = false;
+
+    function compare(key1, key2) {
+        setTimeout(function () {
+            svg.select("#rect" + key1)
+                .style("fill", "yellow");
+            svg.select("#rect" + key2)
+                .style("fill", "yellow");
+        }, 100);
+        if (dataset[key1] > dataset[key2]) {
+            setTimeout(function () {
+                svg.select("#rect" + key1)
+                    .style("fill", "#C1C1C1");
+                svg.select("#rect" + key2)
+                    .style("fill", "red");
+            }, 700);
+        } else {
+            setTimeout(function () {
+                svg.select("#rect" + key2)
+                    .style("fill", "#C1C1C1");
+                svg.select("#rect" + key1)
+                    .style("fill", "red");
+            }, 700);
+        }
+    }
+
+    function swap(key1, key2) {
+        svg.select("#rect" + key1)
+            .transition()
+            .duration(300)
+            .attr("y", height - padding.bottom - 350)
+            .transition()
+            .duration(300)
+            .attr("x", padding.left + key2 * rectStep)
+            .transition()
+            .duration(300)
+            .attr("y", height - padding.bottom - 250)
+            .attr("id", "rect" + key2);
+        svg.select("#rect" + key2)
+            .transition()
+            .duration(300)
+            .attr("y", height - padding.bottom - 150)
+            .transition()
+            .duration(300)
+            .attr("x", padding.left + key1 * rectStep)
+            .transition()
+            .duration(300)
+            .attr("y", height - padding.bottom - 250)
+            .attr("id", "rect" + key1);
+        complete(key1);
+    }
+
+    function complete(key) {
+        svg.select("#rect" + key)
+            .style("fill", "#97FFFF");
+    }
+
+
+    function Pause() {
+        if (!isPause) {
+            document.getElementById("btn").innerText = "继续演示";
+            isPause = true;
+        } else {
+            document.getElementById("btn").innerText = "暂停演示";
+            isPause = false;
+        }
+    }
+
+    function selectionSort() {
+        var i = 0, j = 0, k = 0;
+        var minNum = dataset[0];
+        var time = setInterval(function () {
+            if (!isPause) {
+                if (i < dataset.length) {
+                    if (j < dataset.length) {
+                        setTimeout(function () {
+                            compare(k, j);
+                            if (minNum > dataset[j]) {
+                                minNum = dataset[j];
+                                k = j;
+                            }
+                            j++;
+                        }, 10)
+                    } else {
+                        setTimeout(function () {
+                            dataset[k] = dataset [i];
+                            dataset[i] = minNum;
+                            swap(k, i);
+                            i++;
+                            j = i + 1;
+                            minNum = dataset[i];
+                            k = i;
+                        }, 610);
+
+                    }
+                } else {
+                    clearInterval(time);
+                }
+            }
+        }, 1500)
+    }
+</script>
+</body>
+</html>

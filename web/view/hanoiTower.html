@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>汉诺塔</title>
+    <!--<script src="../d3/d3.js"></script>-->
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <style>
+        .content{
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="content">
+    <div class="sort_content">
+        <svg width="500" height="500">
+            <g>
+                <polyline points="100,150,100,400"
+                          stroke="black" stroke-width="1" id="rectA"></polyline>
+                <text x="95" y="450">A</text>
+            </g>
+            <g>
+                <polyline points="250,150,250,400"
+                          stroke="black" stroke-width="1" id="rectB"></polyline>
+                <text x="245" y="450">B</text>
+            </g>
+            <g>
+                <polyline points="400,150,400,400"
+                          stroke="black" stroke-width="1" id="rectC"></polyline>
+                <text x="395" y="450">C</text>
+            </g>
+            <line x1="0" y1="400" x2="500" y2="400"
+                  stroke="black" stroke-width="1"></line>
+        </svg>
+        <div>
+            塔的层数：
+        <select id="sel1" style="border: 1px seagreen solid">
+            <option value="3">3</option>
+            <option value="4" selected>4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+        </select>
+        动画间隔：
+        <select id="sel2" style="border: 1px solid seagreen">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+        <button onclick="createRect();" style="margin-left: 10px;">生成数据</button>
+        <button onclick="beginAnimation();">开始运行</button>
+        </div>
+    </div>
+    <div class="sort_info">
+        <h2>执行过程</h2>
+        <textarea id="textArea" readonly style="width: 300px;height: 150px;resize: none">
+        </textarea>
+        <h2>核心代码</h2>
+        <p><pre>        hanoiTower(n, a, b, c) {</pre></p>
+        <p><pre>            if (n == 0) {</pre></p>
+        <p><pre>                move(a, c);</pre></p>
+        <p><pre>            } else {</pre></p>
+        <p><pre>                hanoiTower(n - 1, a, c, b);</pre></p>
+        <p><pre>                move(a, c);</pre></p>
+        <p><pre>                hanoiTower(n - 1, b, a, c);</pre></p>
+        <p><pre>            }</pre></p>
+        <p><pre>        }</pre></p>
+    </div>
+</div>
+<script>
+    var A = new Array();
+    var B = new Array(); var C = new Array();
+    var animations = new Array();
+    var len;
+    var pop;
+    var movetime;
+    var animationtime;
+    var svg = d3.select("svg");
+    var dataset = [];
+    var color = ["yellow", "#76EEC6", "#71C671",  "#7171C6", "#577777","#87CEAB", "#7FFFD4"]
+
+    function createRect() {
+        A = [];B=[];C=[];animations =[];
+        var select1 = document.getElementById("sel1");
+        var select2 = document.getElementById("sel2");
+        var val = select1.options[select1.selectedIndex].value;
+        movetime = select2.options[select2.selectedIndex].value * 200;
+        animationtime = movetime * 3;
+        for (var i = val , j = 0; i > 0; i--) {
+            dataset[j] = i * 20;
+            A.push(j);
+            j++;
+        }
+        hanoiTower(A.length - 1, 'A', 'B', 'C')
+        svg.selectAll("rect")
+            .data(dataset)
+            .enter()
+            .append("rect")
+            .attr("fill", function (d, i) {
+                return color[i];
+            })
+            .attr("id", function (d, i) {
+                return "rect" + i;
+            })
+            .attr("x", function (d, i) {
+                return 100 - d / 2;
+            })
+            .attr("y", 0)
+            .transition()
+            .duration(1000)
+            .delay(function (d, i) {
+                return i * 300;
+            })
+            .attr("y", function (d, i) {
+                return 400 - 15 * (i + 1) - 1;
+            })
+            .attr("width", function (d, i) {
+                return d;
+            })
+            .attr("height", 15);
+
+    }
+</script>
+<script>
+    function move_A_B() {
+        console.log("A-->B");
+        len = B.length;
+        pop = A.pop();
+        d3.select("#rect" + pop)
+            .transition()
+            .duration(movetime)
+            .attr("y", 100)
+            .transition()
+            .duration(movetime)
+            .attr("x", 250 - dataset[pop] / 2)
+            .transition()
+            .duration(movetime)
+            .attr("y", 400 - len * 15 - 15 - 1);
+        B.push(pop)
+    }
+
+    function move_A_C() {
+        console.log("A-->C");
+        pop = A.pop();
+        len = C.length;
+        d3.select("#rect" + pop)
+            .transition()
+            .duration(movetime)
+            .attr("y", 100)
+            .transition()
+            .duration(movetime)
+            .attr("x", 400 - dataset[pop] / 2)
+            .transition()
+            .duration(movetime)
+            .attr("y", 400 - len * 15 - 15 - 1);
+        C.push(pop);
+    }
+
+
+    function move_B_A() {
+        console.log("B-->A");
+        pop = B.pop();
+        len = A.length;
+        d3.select("#rect" + pop)
+            .transition()
+            .duration(movetime)
+            .attr("y", 100)
+            .transition()
+            .duration(movetime)
+            .attr("x", 100 - dataset[pop] / 2)
+            .transition()
+            .duration(movetime)
+            .attr("y", 400 - len * 15 - 15 - 1);
+        A.push(pop);
+    }
+
+    function move_B_C() {
+        console.log("B-->C");
+        pop = B.pop();
+        len = C.length;
+        d3.select("#rect" + pop)
+            .transition()
+            .duration(movetime)
+            .attr("y", 100)
+            .transition()
+            .duration(movetime)
+            .attr("x", 400 - dataset[pop] / 2)
+            .transition()
+            .duration(movetime)
+            .attr("y", 400 - len * 15 - 15 - 1);
+        C.push(pop);
+    }
+
+    function move_C_A() {
+        console.log("C-->A");
+        pop = C.pop();
+        len = A.length;
+        d3.select("#rect" + pop)
+            .transition()
+            .duration(movetime)
+            .attr("y", 100)
+            .transition()
+            .duration(movetime)
+            .attr("x", 100 - dataset[pop] / 2)
+            .transition()
+            .duration(movetime)
+            .attr("y", 400 - len * 15 - 15 - 1);
+        A.push(pop);
+    }
+
+    function move_C_B() {
+        console.log("C-->B");
+        pop = C.pop();
+        len = B.length;
+        d3.select("#rect" + pop)
+            .transition()
+            .duration(movetime)
+            .attr("y", 100)
+            .transition()
+            .duration(movetime)
+            .attr("x", 250 - dataset[pop] / 2)
+            .transition()
+            .duration(movetime)
+            .attr("y", 400 - len * 15 - 15 - 1);
+        B.push(pop);
+    }
+
+    function move(a, c) {
+        if (a === "A") {
+            if (c === "B") {
+                animations.push("A-->B");
+            } else if (c === "C") {
+                animations.push("A-->C");
+            }
+        } else if (a === "B") {
+            if (c === "A") {
+                animations.push("B-->A");
+            } else if (c === "C") {
+                animations.push("B-->C");
+            }
+        } else if (a === "C") {
+            if (c === "A") {
+                animations.push("C-->A");
+            } else if (c === "B") {
+                animations.push("C-->B");
+            }
+        }
+    }
+    function hanoiTower(n, a, b, c) {
+        if (n == 0) {
+            move(a, c);
+            console.log("move "+n+"from "+a+" to " + c);
+        } else {
+            hanoiTower(n - 1, a, c, b);
+            console.log("move "+n+"from "+a+" to " + c);
+            move(a, c);
+            hanoiTower(n - 1, b, a, c);
+        }
+    }
+    function beginAnimation() {
+        var i = 0;
+        var time = setInterval(function () {
+            if (i < animations.length) {
+                var obj = document.getElementById("textArea");
+                obj.value += ((i+1)+": "+animations[i]+"\n\t");
+                obj.scrollTop = obj.scrollHeight;
+                if (animations[i] === "A-->B") {
+                    move_A_B();
+                } else if (animations[i] === "A-->C") {
+                    move_A_C();
+                } else if (animations[i] === "B-->A") {
+                    move_B_A();
+                } else if (animations[i] === "B-->C") {
+                    move_B_C();
+                } else if (animations[i] === "C-->A") {
+                    move_C_A();
+                } else if (animations[i] === "C-->B") {
+                    move_C_B();
+                }
+                i++;
+            } else {
+                clearInterval(time);
+            }
+        }, animationtime);
+    }
+</script>
+</body>
+</html>

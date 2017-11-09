@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="../d3/d3.js"></script>
+    <style>
+        .content {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .sort_info {
+            width: 400px;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="content">
+    <div class="sort_content">
+        <div>
+            <svg width="400" height="400"></svg>
+        </div>
+        <div style="margin-left: 20px;">
+            <button onclick="insertSort()">开始演示</button>
+            <button onclick="Pause()" id="btn">暂停演示</button>
+        </div>
+    </div>
+    <div class="sort_info">
+        <h2>插入排序</h2>
+        <div style="font-size: 14px;">
+            <p>⒈ 从第一个元素开始，该元素可以认为已经被排序</p>
+            <p>⒉ 取出下一个元素，在已经排序的元素序列中从后向前扫描</p>
+            <p>⒊ 如果该元素（已排序）大于新元素，将该元素移到下一位置</p>
+            <p>⒋ 重复步骤3，直到找到已排序的元素小于等于新元素的位置</p>
+            <p>⒌ 将新元素插入到下一位置中</p>
+            <p>⒍ 重复步骤2~5</p>
+        </div>
+        <div id="sort_code">
+            <h2>核心代码</h2>
+            <p><pre>    for(i = 1; i < arr.length; i ++){</pre></p>
+            <p><pre>        temp = arr[i]; j = i - 1; </pre></p>
+            <p><pre>        while(j >= 0 && (arr[j] > temp)){</pre></p>
+            <p><pre>            arr[j+1] = arr[j]; j --;}</pre></p>
+            <p><pre>        if(j != i -1){</pre></p>
+            <p><pre>            arr[j+1] = temp;</pre></p>
+            <p><pre>        }}</pre></p>
+        </div>
+    </div>
+</div>
+<script>
+    var dataset = [60, 80, 40, 55, 20];
+    var width = 800;
+    var height = 400;
+    var svg = d3.select("svg");
+    var padding = {top: 20, right: 20, bottom: 20, left: 20};
+    var rectStep = 55;
+    var rectWidth = 30;
+    var rect = svg.selectAll("rect")
+        .data(dataset)
+        .enter()
+        .append("g")
+        .append("rect")
+        .attr("fill", "steelblue")
+        .attr("id", function (d, i) {
+            return "rect" + i;
+        })
+        .attr("x", function (d, i) {
+            return padding.left + i * rectStep;
+        })
+        .attr("y", function () {
+            return height - padding.bottom - 300;
+        })
+        .attr("width", 50)
+        .attr("height", function (d) {
+            return d;
+        });
+</script>
+<script>
+    var isPause = false;
+    function move_right(key) {
+        svg.select("#rect" + key)
+            .style("fill", "red")
+            .transition()
+            .duration(600)
+            .attr("x", padding.left + (key + 1) * rectStep)
+            .style("fill", "#C1C1C1")
+            .attr("id", "rect" + (key + 1));
+    }
+
+    function move_left(key) {
+        svg.select("#rect" + key)
+            .style("fill", "red")
+            .transition()
+            .duration(600)
+            .attr("x", padding.left + (key - 1) * rectStep)
+            .style("fill", "#C1C1C1")
+            .attr("id", "rect" + (key - 1));
+    }
+
+    function move_down(key) {
+        svg.select("#rect" + key)
+            .style("fill", "skyblue")
+            .transition()
+            .duration(600)
+            .attr("y", height - padding.bottom - 200);
+    }
+
+    function move_up(key) {
+        svg.select("#rect" + key)
+            .style("fill", "#C1C1C1")
+            .transition()
+            .duration(600)
+            .attr("y", height - padding.bottom - 300);
+    }
+
+    function Pause() {
+        if (!isPause) {
+            document.getElementById("btn").innerText = "继续演示";
+            isPause = true;
+        } else {
+            document.getElementById("btn").innerText = "暂停演示";
+            isPause = false;
+        }
+    }
+
+    function highLight() {
+        d3.selectAll("rect")
+            .style("fill", "#97FFFF")
+    }
+    function insertSort() {
+        var i = 1, j = 0;
+        //保存移动的位置下标
+        var index = 1;
+        var flag = 0;
+        var temp;
+        var time = setInterval(function () {
+            if(!isPause) {
+                if (index < dataset.length) {
+                    setTimeout(function () {
+                        if (flag == 0) {
+                            move_down(index);
+                            flag = 1;
+                            i = index;
+                        }
+                    }, 10);
+                    setTimeout(function () {
+                        if (dataset[i] < dataset[i - 1]) {
+                            j = i - 1;
+                            if (j >= 0 && dataset[i] <= dataset[j]) {
+                                move_left(i);
+                                move_right(i - 1);
+                                i--;
+                                temp = dataset[j];
+                                dataset[j] = dataset[j + 1];
+                                dataset[j + 1] = temp;
+                                j--;
+                            }
+                        } else {
+                            index++;
+                            move_up(i);
+                            flag = 0;
+                        }
+                    }, 1010)
+                } else {
+                    clearInterval(time);
+                    highLight();
+                }
+            }
+        }, 1500);
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>冒泡排序</title>
+    <script src="../d3/d3.js"></script>
+    <style>
+        .content {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .sort_info {
+            width: 400px;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="content">
+    <div class="sort_content">
+        <div>
+            <svg width="400" height="400"></svg>
+        </div>
+        <div style="margin-left: 20px">
+            <button onclick="createRect()">生成数据</button>
+            <button onclick="bubbleSort()">开始演示</button>
+            <button onclick="Pause()" id="btn">暂停演示</button>
+        </div>
+    </div>
+    <div class="sort_info">
+        <h2>冒泡排序</h2>
+        <div style="font-size: 14px;">
+            <p>①. 比较相邻的元素。如果第一个比第二个大，就交换彼此。</p>
+            <p>②. 对每一对相邻元素作同样的工作，从开始第一对到最后一对。每次排序过后最后的元素是本次排序中是最大的数。</p>
+            <p>③. 针对所有的元素重复以上的步骤。</p>
+            <p>④. 持续每次对越来越少的元素重复上面的步骤，直到没有任何一对数字需要比较</p>
+        </div>
+        <div class="sort_code">
+            <h2>核心代码</h2>
+            <p>
+            <pre id="code1">    for(i = 0; i < arr.length; i ++)</pre>
+            </p>
+            <p>
+            <pre id="code2">         for(j = 0; j < arr,length - 1 - i; j ++)</pre>
+            </p>
+            <p>
+            <pre id="code3">             if(arr[j] > arr[j + 1])</pre>
+            </p>
+            <p>
+            <pre id="code4">                 swap(arr[j] , arr[j+1])</pre>
+            </p>
+        </div>
+    </div>
+
+</div>
+<script>
+    var svg = d3.select("svg");
+    var dataset = [];
+    var padding = {top: 20, right: 20, bottom: 20, left: 20};
+    var rectStep = 35;
+    var rectWidth = 30;
+    var width = 400;
+    var height = 400;
+    function createRect() {
+        document.querySelector('svg').innerHTML = '';
+        dataset = d3.range(8).map(function(){
+            return d3.round(d3.random.normal(100,70)()+100,1);
+        });
+        svg.selectAll("rect")
+            .data(dataset)
+            .enter()
+            .append("g")
+            .append("rect")
+            .attr("fill", "steelblue")
+            .attr("id", function (d, i) {
+                return "rect" + i;
+            })
+            .attr("x", function (d, i) {
+                return padding.left + i * rectStep;
+            })
+            .attr("y", 0)
+            .attr("width", rectWidth)
+            .attr("height", function (d) {
+                return d;
+            });
+        svg.selectAll("rect")
+            .transition()
+            .delay(function (d, i) {
+                return i * 200;
+            })
+            .duration(2000)
+            .ease("bounce")
+            .attr("y", function (d) {
+                return 400 - padding.bottom - d;
+            })
+    }
+</script>
+<script>
+    var temp;
+    var isPause = false;
+    function move_right(key) {
+        svg.select("#rect" + key)
+            .style("fill", "red")
+            .transition()
+            .duration(600)
+            .attr("x", padding.left + (key + 1) * rectStep)
+            .style("fill", "#C1C1C1")
+            .attr("id", "rect" + (key + 1));
+    }
+
+    function move_left(key) {
+        svg.select("#rect" + key)
+            .style("fill", "red")
+            .transition()
+            .duration(600)
+            .attr("x", padding.left + (key - 1) * rectStep)
+            .style("fill", "#C1C1C1")
+            .attr("id", "rect" + (key - 1));
+    }
+
+    function compare(key1, key2) {
+        setTimeout(function () {
+            lowLight();
+            highLight(2);
+            svg.select("#rect" + key1)
+                .style("fill", "#C1C1C1");
+            svg.select("#rect" + key2)
+                .style("fill", "#C1C1C1");
+        }, 10);
+        setTimeout(function () {
+            lowLight();
+            highLight(3);
+        }, 200)
+        setTimeout(function () {
+            if (dataset[key1] > dataset[key2]) {
+                lowLight();
+                highLight(4);
+                temp = dataset[key2];
+                dataset[key2] = dataset[key1];
+                dataset[key1] = temp;
+                move_left(key2);
+                move_right(key1);
+            } else {
+                svg.select("#rect" + key1)
+                    .style("fill", "yellow");
+                svg.select("#rect" + key2)
+                    .style("fill", "yellow");
+            }
+        }, 400);
+        setTimeout(function () {
+            svg.select("#rect" + key1)
+                .style("fill", "#C1C1C1");
+            svg.select("#rect" + key2)
+                .style("fill", "#C1C1C1");
+        }, 800);
+    }
+
+    function complete(key) {
+        svg.select("#rect" + key)
+            .style("fill", "#97FFFF");
+    }
+
+
+    function Pause() {
+        if (!isPause) {
+            document.getElementById("btn").innerText = "继续演示";
+            isPause = true;
+        } else {
+            document.getElementById("btn").innerText = "暂停演示";
+            isPause = false;
+        }
+    }
+
+    function highLight(key) {
+        d3.select("#code" + key)
+            .style("background-color", "#97FFFF");
+    }
+
+    function lowLight() {
+        d3.selectAll("pre")
+            .style("background-color", "white");
+    }
+
+    function bubbleSort() {
+        var i = 0, j = 0;
+        highLight(1);
+        var time = setInterval(function () {
+            if (!isPause) {
+                if (i < dataset.length) {
+                    if (j < dataset.length - i - 1) {
+                        compare(j, j + 1);
+                        j++;
+                    } else {
+                        complete(j)
+                        lowLight();
+                        highLight(1);
+                        i++;
+                        j = 0;
+                    }
+                } else {
+                    lowLight();
+                    clearInterval(time);
+                    alert("排序完毕！");
+                }
+            }
+        }, 1500);
+    }
+</script>
+</body>
+</html>
